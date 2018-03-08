@@ -20,3 +20,22 @@
 * Запустил три контейнера для разных компонентов приложения
 * Создал `docker volume` для MongoDB
 
+
+## Homework 17
+
+
+> Запустите несколько раз (2-4)
+>
+> `docker run --network host -d nginx`
+>
+> Каков результат? Что выдал docker ps? Как думаете почему? 
+
+Команда `docker ps` отобразила только один контейнер с Nginx:
+
+```text
+CONTAINER ID        IMAGE                        COMMAND                  CREATED              STATUS              PORTS                    NAMES
+be123681eed4        nginx                        "nginx -g 'daemon of…"   25 seconds ago       Up 20 seconds                                admiring_mcnulty
+```
+
+Подозреваю что из-за того, что собсно контейнеры не отличаются сами по себе, поэтому используется один контейнер.
+
