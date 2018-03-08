@@ -23,6 +23,18 @@
 
 ## Homework 17
 
+> Запустим контейнер в сетевом пространстве docker-хоста
+> 
+> `docker run --network host --rm -d --name net_test joffotron/docker-net-tools -c "sleep 100"`
+> 
+> Сравните выводы команд:
+>
+> `docker exec -ti net_test ifconfig`
+>
+> `docker-machine ssh docker-host ifconfig`
+
+Список сетевых интерфейсов идентичный.
+То есть у контейнера и у *docker-machine* одни и теже сетевые интерфейсы
 
 > Запустите несколько раз (2-4)
 >
