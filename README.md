@@ -153,3 +153,15 @@ otus_ivan_priorov@docker-host:~$ ps ax |grep docker-proxy
 На инстансе развернул GitLab-CI
 
 Добавил *pipeline*
+
+
+## Homework 20
+
+* Расширил существующий pipeline в Gitlab-CI
+* Определил окружение *staging* и *production*
+  
+  * Установил условия и ограничение - тег в гите
+  
+* Настроил динамическое окружение
+
+_задания со звездочками не делал_ 
