@@ -1,3 +1,11 @@
 .idea/
 custom/
 *.txt
+
+build_info.txt
+prometheus/
+
+## python specific
+*.pyc
+*.lock
+.env
