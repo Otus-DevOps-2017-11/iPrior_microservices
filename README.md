@@ -144,3 +144,41 @@ otus_ivan_priorov@docker-host:~$ ps ax |grep docker-proxy
 > Узнайте как образуется базовое имя проекта. Можно ли его задать? Если можно то как?
 
 Имя контейнера можно задать параметром в `docker-compose.yml` - [container_name](https://docs.docker.com/compose/compose-file/#container_name)
+
+
+## Homework 19
+
+Развернул инстанс в GCP через веб интерфейс.
+
+На инстансе развернул GitLab-CI
+
+Добавил *pipeline*
+
+
+## Homework 20
+
+* Расширил существующий pipeline в Gitlab-CI
+* Определил окружение *staging* и *production*
+  
+  * Установил условия и ограничение - тег в гите
+  
+* Настроил динамическое окружение
+
+_задания со звездочками не делал_ 
+
+## Homework 21
+
+[Ссылка на докер хаб](https://hub.docker.com/u/iprior/)
+
+
+## Homework 23
+
+[Ссылка на докер хаб](https://hub.docker.com/u/iprior/)
+
+
+## Homework 25
+
+Модифицировал файл `src/post-py/Dockerfile` - добавил строку `RUN apk add --update gcc musl-dev`
+
+Создал файл `docker/docker-compose-logging.yml` в котором описал развертывание **Elastic Stack** (EFK)
+
