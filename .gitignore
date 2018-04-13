@@ -2,6 +2,8 @@
 custom/
 *.txt
 
+build_info.txt
+
 ## python specific
 *.pyc
 *.lock
