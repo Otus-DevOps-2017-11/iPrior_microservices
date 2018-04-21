@@ -1,4 +1,4 @@
-version: '3.3'
+version: '2'
 services:
   post_db:
     image: mongo:${SERVICE_POST_DB_VER}
@@ -10,7 +10,6 @@ services:
           - comment_db
     container_name: my_post_db
   ui:
-    build: ./ui
     image: ${USERNAME}/ui:${SERVICE_UI_VER}
     ports:
       - ${FRONT_PORT}/tcp
@@ -18,22 +17,49 @@ services:
       - front_net
     container_name: my_ui_service
   post:
-    build: ./post-py
     image: ${USERNAME}/post:${SERVICE_POST_VER}
     networks:
       - back_net
       - front_net
     container_name: my_post_service
   comment:
-    build: ./comment
     image: ${USERNAME}/comment:${SERVICE_COMMENT_VER}
     networks:
       - back_net
       - front_net
     container_name: my_comment_service
 
+  prometheus:
+    image: ${USERNAME}/prometheus
+    ports:
+      - '9090:9090'
+    volumes:
+      - prometheus_data:/prometheus
+    networks:
+      - back_net
+      - front_net
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention=1d'
+
+  node-exporter:
+    image: prom/node-exporter:v0.15.2
+    user: root
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    networks:
+      - back_net
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
+
 volumes:
   post_db:
+  prometheus_data:
 
 networks:
   back_net:
