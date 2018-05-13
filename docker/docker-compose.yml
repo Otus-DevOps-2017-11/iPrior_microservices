@@ -1,34 +1,99 @@
-version: '2'
+version: '3.5'
 services:
-  post_db:
-    image: mongo:${SERVICE_POST_DB_VER}
-    volumes:
-      - post_db:/data/db
-    container_name: my_post_db
 
-  ui:
-    image: ${USERNAME}/ui:${SERVICE_UI_VER}
-    ports:
-      - ${FRONT_PORT}/tcp
-    container_name: my_ui_service
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: localhost:24224
-        tag: service.ui
+  mongo:
+    image: mongo:${MONGO_VERSION}
+    deploy:
+        placement:
+            constraints:
+              - node.labels.reliability == high
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      back_net:
+        aliases:
+          - post_db
+          - comment_db
 
   post:
-    image: ${USERNAME}/post:${SERVICE_POST_VER}
-    container_name: my_post_service
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: localhost:24224
-        tag: service.post
+    image: ${USER_NAME}/post:${POST_VERSION}
+    deploy:
+        restart_policy:
+            condition: on-failure
+            max_attempts: 15
+            delay: 1s
+        resources:
+            limits:
+                cpus: "0.3"
+                memory: 300M
+        mode: replicated
+        replicas: 5
+        update_config:
+            delay: 10s
+            parallelism: 2
+            failure_action: rollback
+        placement:
+            constraints:
+              - node.role == worker
+              - node.labels.monitoring != 1
+    networks:
+      - front_net
+      - back_net
 
   comment:
-    image: ${USERNAME}/comment:${SERVICE_COMMENT_VER}
-    container_name: my_comment_service
+    image: ${USER_NAME}/comment:${COMMENT_VERSION}
+    deploy:
+        restart_policy:
+            condition: on-failure
+            max_attempts: 10
+            delay: 1s
+        resources:
+            limits:
+                cpus: "0.3"
+                memory: 300M
+        mode: replicated
+        replicas: 5
+        update_config:
+            delay: 10s
+            parallelism: 2
+            failure_action: rollback
+        placement:
+            constraints:
+              - node.role == worker
+              - node.labels.monitoring != 1
+    networks:
+      - front_net
+      - back_net
+
+  ui:
+    image: ${USER_NAME}/ui:${UI_VERSION}
+    deploy:
+        restart_policy:
+            condition: on-failure
+            max_attempts: 3
+            delay: 3s
+        resources:
+            limits:
+                cpus: "0.25"
+                memory: 150M
+        mode: replicated
+        replicas: 5
+        update_config:
+            delay: 5s
+            parallelism: 1
+            failure_action: pause
+        placement:
+            constraints:
+              - node.role == worker
+              - node.labels.monitoring != 1
+    ports:
+      - "${UI_PORT}:9292/tcp"
+    networks:
+      - front_net
 
 volumes:
-  post_db:
+  mongo_data: {}
+
+networks:
+  back_net: {}
+  front_net: {}
