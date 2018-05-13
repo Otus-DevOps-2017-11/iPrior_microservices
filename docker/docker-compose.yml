@@ -4,36 +4,31 @@ services:
     image: mongo:${SERVICE_POST_DB_VER}
     volumes:
       - post_db:/data/db
-    networks:
-      back_net:
-        aliases:
-          - comment_db
     container_name: my_post_db
 
   ui:
     image: ${USERNAME}/ui:${SERVICE_UI_VER}
     ports:
       - ${FRONT_PORT}/tcp
-    networks:
-      - front_net
     container_name: my_ui_service
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.ui
 
   post:
     image: ${USERNAME}/post:${SERVICE_POST_VER}
-    networks:
-      - back_net
-      - front_net
     container_name: my_post_service
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.post
+
   comment:
     image: ${USERNAME}/comment:${SERVICE_COMMENT_VER}
-    networks:
-      - back_net
-      - front_net
     container_name: my_comment_service
 
 volumes:
   post_db:
-
-networks:
-  back_net:
-  front_net:

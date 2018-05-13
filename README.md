@@ -174,3 +174,11 @@ _задания со звездочками не делал_
 ## Homework 23
 
 [Ссылка на докер хаб](https://hub.docker.com/u/iprior/)
+
+
+## Homework 25
+
+Модифицировал файл `src/post-py/Dockerfile` - добавил строку `RUN apk add --update gcc musl-dev`
+
+Создал файл `docker/docker-compose-logging.yml` в котором описал развертывание **Elastic Stack** (EFK)
+
