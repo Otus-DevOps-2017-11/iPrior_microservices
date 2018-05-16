@@ -182,3 +182,160 @@ _задания со звездочками не делал_
 
 Создал файл `docker/docker-compose-logging.yml` в котором описал развертывание **Elastic Stack** (EFK)
 
+
+## Homework 27
+
+> Добавить в кластер еще 1 worker машину
+
+```bash
+docker-machine create --driver google \
+   --google-project  docker-XXXXXXX  \
+   --google-zone europe-west1-b \
+   --google-machine-type g1-small \
+   --google-machine-image $(gcloud compute images list --filter ubuntu-1604-lts --uri) \
+   worker-3
+
+# Running pre-create checks...
+# (worker-3) Check that the project exists
+# (worker-3) Check if the instance already exists
+# Creating machine...
+# ...
+# Docker is up and running!
+# To see how to connect your Docker Client to the Docker Engine running on this virtual machine, run: docker-machine env worker-3
+
+docker-machine ssh worker-3
+# Welcome to Ubuntu 16.04.4 LTS (GNU/Linux 4.13.0-1015-gcp x86_64)
+
+sudo docker swarm join --token XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  000.000.000.000:2377
+# This node joined a swarm as a worker
+```
+
+> Проследить какие контейнеры запустятся на ней
+
+```bash
+docker stack ps DEV
+# ID                  NAME                                          IMAGE                        NODE                DESIRED STATE       CURRENT STATE           ERROR               PORTS
+# 0s9nmfdppm6j        DEV_node-exporter.yddrg3mgqhwyp0pqh8gbzj1l0   prom/node-exporter:v0.15.2   worker-3            Running             Running 2 minutes ago
+# ...
+```
+
+> Проследить какие контейнеры запустятся на новой машине.
+> Сравнить с пунктом 2.
+
+**replicas: 3**
+
+```bash
+docker stack ps DEV
+# ID                  NAME                                          IMAGE                        NODE                DESIRED STATE       CURRENT STATE              ERROR               PORTS
+# 0s9nmfdppm6j        DEV_node-exporter.yddrg3mgqhwyp0pqh8gbzj1l0   prom/node-exporter:v0.15.2   worker-3            Running             Running 6 minutes ago                         
+# su9siz1vzsjx        DEV_ui.3                                      iprior/ui:latest             worker-3            Running             Assigned 7 seconds ago                         
+# 44rku1njqd01        DEV_post.3                                    iprior/post:latest           worker-3            Running             Preparing 9 seconds ago                        
+# zwtzq4tpo7c4        DEV_comment.3                                 iprior/comment:latest        worker-3            Running             Preparing 12 seconds ago 
+```
+
+**replicas: 5**
+
+```bash
+docker stack ps DEV
+# ID                  NAME                                          IMAGE                        NODE                DESIRED STATE       CURRENT STATE            ERROR               PORTS
+# yr2ikfedm1fb        DEV_node-exporter.v2317it64mxhdi81zg7tmzvg6   prom/node-exporter:v0.15.2   master-1            Running             Running 19 minutes ago                       
+# zh3ds9c82zdk        DEV_prometheus.1                              iprior/prometheus:latest     master-1            Running             Running 19 minutes ago                       
+# mcs2ib6en20h        DEV_cadvisor.1                                google/cadvisor:v0.29.0      master-1            Running             Running 19 minutes ago                       
+# oty16fmlhmf2        DEV_mongo.1                                   mongo:3.2                    master-1            Running             Running 19 minutes ago                       
+# n6wnmp0p5fyz        DEV_alertmanager.1                            iprior/alertmanager:latest   master-1            Running             Running 19 minutes ago
+#                        
+# uss4r3li4fbp        DEV_node-exporter.lvyuj24iwuvoyohjmvmait4sa   prom/node-exporter:v0.15.2   worker-1            Running             Running 18 minutes ago                       
+# dqv3gjyuucdk        DEV_ui.2                                      iprior/ui:latest             worker-1            Running             Running 19 minutes ago                       
+# iskq9hiuq79l        DEV_ui.4                                      iprior/ui:latest             worker-1            Running             Running 7 seconds ago                        
+# cldnimi0h79t        DEV_post.2                                    iprior/post:latest           worker-1            Running             Running 19 minutes ago                       
+# i7v3qp0qye0n        DEV_comment.2                                 iprior/comment:latest        worker-1            Running             Running 19 minutes ago                       
+# 3mbfa29xvwqr        DEV_grafana.1                                 grafana/grafana:5.0.0        worker-1            Running             Running 18 minutes ago                       
+# 
+# eicaw6cmhvam        DEV_node-exporter.p4fwiti2r1c93tupz61trly2s   prom/node-exporter:v0.15.2   worker-2            Running             Running 19 minutes ago                       
+# 1qq05r396cyu        DEV_ui.1                                      iprior/ui:latest             worker-2            Running             Running 19 minutes ago                       
+# wz8b3l8v61mz        DEV_ui.5                                      iprior/ui:latest             worker-2            Running             Running 7 seconds ago                        
+# 7b24kky9qg4j        DEV_post.1                                    iprior/post:latest           worker-2            Running             Running 19 minutes ago                       
+# ptf9oaynja8e        DEV_post.4                                    iprior/post:latest           worker-2            Running             Running 9 seconds ago                        
+# 8quebb52i11e        DEV_comment.1                                 iprior/comment:latest        worker-2            Running             Running 19 minutes ago                       
+# szubsj7n8px4        DEV_comment.5                                 iprior/comment:latest        worker-2            Running             Running 5 seconds ago                        
+# 
+# 0s9nmfdppm6j        DEV_node-exporter.yddrg3mgqhwyp0pqh8gbzj1l0   prom/node-exporter:v0.15.2   worker-3            Running             Running 13 minutes ago                       
+# su9siz1vzsjx        DEV_ui.3                                      iprior/ui:latest             worker-3            Running             Running 5 minutes ago                        
+# 44rku1njqd01        DEV_post.3                                    iprior/post:latest           worker-3            Running             Running 5 minutes ago                        
+# 2agvtdseo997        DEV_post.5                                    iprior/post:latest           worker-3            Running             Running 9 seconds ago
+# zwtzq4tpo7c4        DEV_comment.3                                 iprior/comment:latest        worker-3            Running             Running 5 minutes ago                        
+# sy15wszjxe07        DEV_comment.4                                 iprior/comment:latest        worker-3            Running             Running 5 seconds ago 
+```
+
+Сервисы равномерно распределяются по свободным нодам.
+
+Интересно размещаются сервисы у которых не определён `placement constraints`, например *grafana*, размещена на `worker-1`, когда остальные сервисы, без указанного `placement constraints`, разместились на `master-1`.
+
+*node-exporter* из-за `global mode` размещается на всех нодах, в том числе и вновь добавленных.
+
+#### Задание
+
+> Помимо сервисов приложения, у вас может быть инфраструктура, описанная в compose-файле (prometheus, nodeexporter, grafana …)
+> Нужно выделить ее в отдельный compose-файл. С названием docker-compose.monitoring.yml
+> В него выносится все что относится к этим сервисам (volumes, services)
+
+Ноде `worker-3` установлю **label**:
+
+```bash
+ docker node update --label-add monitoring=1 worker-3
+```
+
+В файл `docker-compose.yml`, сервисам добавлю 
+
+```
+        placement:
+            constraints:
+              - node.role == worker
+              - node.labels.monitoring != 1
+```
+
+В файл `docker-compose.monitoring.yml` сервисам добавлю
+
+```
+    deploy:
+        placement:
+            constraints:
+              - node.labels.monitoring == 1
+```
+
+До указания `placement constraints` с лейблем *monitoring* контейнеры были "размазаны" по нодам кластера.
+Интересно то, что после указания ограничений, относительно `node.labels.monitoring`, сервисы которые были развернуты на `worker-3`, например **ui**, не были удалены, а просто остановлены:
+
+```
+docker stack ps DEV
+ID                  NAME                                          IMAGE                        NODE                DESIRED STATE       CURRENT STATE            ERROR               PORTS
+rzrhq19up36s        DEV_node-exporter.p4fwiti2r1c93tupz61trly2s   prom/node-exporter:v0.15.2   worker-2            Running             Running 4 minutes ago                        
+5ka1sfex66to        DEV_node-exporter.lvyuj24iwuvoyohjmvmait4sa   prom/node-exporter:v0.15.2   worker-1            Running             Running 4 minutes ago                        
+iqb4vi74xxvf        DEV_node-exporter.v2317it64mxhdi81zg7tmzvg6   prom/node-exporter:v0.15.2   master-1            Running             Running 4 minutes ago                        
+p3ig2zayfyu9        DEV_node-exporter.yddrg3mgqhwyp0pqh8gbzj1l0   prom/node-exporter:v0.15.2   worker-3            Running             Running 4 minutes ago                        
+tv6z5lnhv7jh        DEV_ui.1                                      iprior/ui:latest             worker-1            Running             Running 7 seconds ago                        
+qruddp94sud1        DEV_alertmanager.1                            iprior/alertmanager:latest   worker-3            Running             Running 3 minutes ago                        
+ft4aedecjica        DEV_grafana.1                                 grafana/grafana:5.0.0        worker-3            Running             Running 3 minutes ago                        
+oete56fz3vq5        DEV_mongo.1                                   mongo:3.2                    master-1            Running             Running 4 minutes ago                        
+cgdwnbwedchb        DEV_prometheus.1                              iprior/prometheus:latest     worker-3            Running             Running 3 minutes ago                        
+nkek3qx34l7n        DEV_post.1                                    iprior/post:latest           worker-1            Running             Running 4 minutes ago                        
+ziys46ya6vvm        DEV_comment.1                                 iprior/comment:latest        worker-2            Running             Running 4 minutes ago                        
+zamssq6rtubt        DEV_cadvisor.1                                google/cadvisor:v0.29.0      worker-3            Running             Running 4 minutes ago                        
+60h0kbg9wfo8        DEV_ui.1                                      iprior/ui:latest             worker-3            Shutdown            Shutdown 8 seconds ago                       
+ftsghty9i0e1        DEV_post.2                                    iprior/post:latest           worker-1            Running             Starting 1 second ago                        
+tzxbq66hva8b         \_ DEV_post.2                                iprior/post:latest           worker-3            Shutdown            Shutdown 1 second ago                        
+miglnyiqexxn        DEV_comment.2                                 iprior/comment:latest        worker-1            Running             Running 4 minutes ago                        
+4btezm7a45e4        DEV_ui.2                                      iprior/ui:latest             worker-1            Running             Running 4 minutes ago                        
+wpfe1tstdpin        DEV_post.3                                    iprior/post:latest           worker-2            Running             Running 4 minutes ago                        
+nxmvypoxw4iv        DEV_comment.3                                 iprior/comment:latest        worker-2            Running             Running 4 minutes ago                        
+4k0wsgodju8d        DEV_ui.3                                      iprior/ui:latest             worker-2            Running             Running 4 minutes ago                        
+uvcmuc299jck        DEV_ui.4                                      iprior/ui:latest             worker-2            Ready               Ready 2 seconds ago                          
+wglbvaoz0jxf        DEV_comment.4                                 iprior/comment:latest        worker-2            Running             Running 3 seconds ago                        
+c11bnscetqnh        DEV_post.4                                    iprior/post:latest           worker-1            Running             Running 4 minutes ago                        
+js76pjllgu6k        DEV_comment.4                                 iprior/comment:latest        worker-3            Shutdown            Shutdown 4 seconds ago                       
+h1c7g7fwuuz1        DEV_ui.4                                      iprior/ui:latest             worker-3            Shutdown            Running 2 seconds ago                        
+8rcrnlqxf57r        DEV_post.5                                    iprior/post:latest           worker-2            Running             Starting 1 second ago                        
+2054sdui62mf         \_ DEV_post.5                                iprior/post:latest           worker-3            Shutdown            Shutdown 1 second ago                        
+atykq3r75a7q        DEV_comment.5                                 iprior/comment:latest        worker-1            Running             Running 4 minutes ago                        
+tazxwk8i7b0j        DEV_ui.5                                      iprior/ui:latest             worker-2            Running             Running 4 minutes ago
+```
